@@ -1,0 +1,53 @@
+# Ignorer les environnements virtuels Python
+.venv/
+__pycache__/
+*.pyc
+
+# Données générées automatiquement
+velib_output/
+*.json
+*.csv
+# fichiers temporaires
+.DS_Store
+*.log
+
+# PyCharm / VSCode
+.idea/
+.vscode/
+*.iml
+
+# sbt / Scala / Java
+target/
+project/target/
+project/project/
+.metals/
+.bloop/
+.bsp/
+
+# Cache Streamlit
+.streamlit/
+__pycache__/
+*.pyc
+.venv/
+
+# fichiers système Windows
+Thumbs.db
+# Spark / Kafka checkpoints
+checkpoint/
+*.crc
+
+# SBT / Scala / IntelliJ
+project/target/
+target/
+
+# Build outputs
+target/
+project/target/
+*.class
+*.jar
+
+# Kafka logs
+logs/
+kafka_*/logs/
+
+
