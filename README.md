@@ -39,8 +39,9 @@ cd.../velib
 ### Étape 1 — Lancer Zookeeper (Terminal 1)
 
 ```bash
-cd C:\kafka\kafka_2.13-3.9.1
-.\bin\windows\zookeeper-server-start.bat .\config\zookeeper.properties
+cd C:\kafka\kafka_2.13-3.9.1 cd C:\kafka\kafka_2.12-3.9.1   
+
+
 ```
 
 ### Étape 2 — Lancer le serveur Kafka (Terminal 2)

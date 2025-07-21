@@ -1,4 +1,6 @@
-stationcode_to_name = {
+import json
+
+mapping = {
   "16107": "Benjamin Godard - Victor Hugo",
   "40001": "Hôpital Mondor",
   "9020": "Toudouze - Clauzel",
@@ -1447,3 +1449,5 @@ stationcode_to_name = {
   "12105": "Bercy - Villot",
   "8004": "Malesherbes - Place de la Madeleine"
 }
+with open("station_name_mapping.json", "w") as f:
+    json.dump(mapping, f)

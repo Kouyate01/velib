@@ -1,25 +1,37 @@
-import java.util.Properties
-import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
-import scala.io.Source
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.functions._
 
 object VelibProducer {
   def main(args: Array[String]): Unit = {
-    val props = new Properties()
-    props.put("bootstrap.servers", "localhost:9092")
-    props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer")
-    props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer")
 
-    val producer = new KafkaProducer[String, String](props)
-    val apiUrl = "http://data.opendatasoft.com/api/explore/v2.1/catalog/datasets/velib-disponibilite-en-temps-reel@parisdata/records?limit=100"
+    // Crée la session Spark
+    val spark = SparkSession.builder()
+      .appName("VelibProducer")
+      .master("local[*]")
+      .getOrCreate()
 
-    while (true) {
-      val data = Source.fromURL(apiUrl).mkString
-      println("JSON envoyé : " + data) // Affiche le JSON produit
-      val record = new ProducerRecord[String, String]("velib-data", null, data)
-      producer.send(record)
-      println("Data sent to Kafka")
-      Thread.sleep(10000) // 10 secondes entre chaque collecte
-    }
-    producer.close()
+    // URL de l’API JSON
+    val apiUrl = "https://data.opendatasoft.com/api/explore/v2.1/catalog/datasets/velib-disponibilite-en-temps-reel@parisdata/records?limit=100"
+
+    // Lis le JSON depuis l’URL (Spark supporte l’URL directement si c’est un fichier statique ou via DataFrame JSON → ici, on triche avec un DataFrame temporaire)
+    import scala.io.Source
+    import spark.implicits._
+
+    // On lit l’URL via Scala standard
+    val rawJson = Source.fromURL(apiUrl).mkString
+
+    // On crée un DataFrame avec une seule colonne "value"
+    val df = Seq(rawJson).toDF("value")
+
+    // Écrit le DataFrame vers Kafka
+    df.selectExpr("CAST(value AS STRING)")
+      .write
+      .format("kafka")
+      .option("kafka.bootstrap.servers", "localhost:9092")
+      .option("topic", "velib-data")
+      .save()
+
+    println("✓ Données envoyées vers Kafka avec Spark.")
+    spark.stop()
   }
 }

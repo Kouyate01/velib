@@ -59,7 +59,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# === DONNÉES ===
+# === CHARGEMENT DES DONNÉES JSON PRODUITES PAR SPARK ===
 DATA_DIR = "velib_output"
 json_files = [f for f in os.listdir(DATA_DIR) if f.endswith(".json")]
 if not json_files:
@@ -139,22 +139,21 @@ with k3:
 with k4:
     st.markdown(f"<div class='kpi-block'><div class='kpi-title'>Vélos disponibles</div><div class='kpi-value'>{int(df['numbikesavailable'].sum())}</div></div>", unsafe_allow_html=True)
 
-# === DONUT — PAR TYPE DE VÉLO ===
-st.markdown("<div class='section-header'>Répartition filtrée des vélos disponibles</div>", unsafe_allow_html=True)
+# === DONUT TYPE DE VÉLO (basé sur type_dominant) ===
+st.markdown("<div class='section-header'>Répartition filtrée des types dominants</div>", unsafe_allow_html=True)
 arr_options = sorted(df["arrondissement"].unique())
 arr_selected = st.multiselect("Filtrer par arrondissement", arr_options, default=arr_options)
 df_filtered = df[df["arrondissement"].isin(arr_selected)]
-df_total = df_filtered.groupby("arrondissement")[["ebike", "mechanical"]].sum().reset_index()
-df_total = df_total.melt(id_vars="arrondissement", value_vars=["ebike", "mechanical"],
-                         var_name="type", value_name="total")
+donut_data = df_filtered["type_dominant"].value_counts().reset_index()
+donut_data.columns = ["type", "total"]
 
-fig = px.pie(df_total, names='type', values='total', hole=0.4,
-             color_discrete_map={"ebike": "#2ECC71", "mechanical": "#3498DB"})
+fig = px.pie(donut_data, names='type', values='total', hole=0.4,
+             color_discrete_map={"électrique": "#2ECC71", "mécanique": "#3498DB", "mixte": "#E67E22"})
 st.plotly_chart(fig, use_container_width=True)
 
 # === STATIONS PLEINES ===
 st.markdown("<div class='section-header'>Stations pleines (aucune borne libre)</div>", unsafe_allow_html=True)
-df_full = df[df["numdocksavailable"] == 0]
+df_full = df[df["is_full"] == True]
 if df_full.empty:
     st.info("Aucune station pleine actuellement.")
 else:
@@ -162,6 +161,4 @@ else:
 
 # === TABLEAU FINAL ===
 st.markdown("<div class='section-header'>Toutes les stations disponibles</div>", unsafe_allow_html=True)
-st.dataframe(df[[
-    "stationcode", "name", "ebike", "mechanical", "numdocksavailable", "arrondissement"
-]].sort_values("arrondissement"))
+st.dataframe(df[[ "stationcode", "name", "type_dominant", "ebike", "mechanical", "numdocksavailable", "arrondissement"]].sort_values("arrondissement"))
