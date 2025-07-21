@@ -12,6 +12,8 @@ object VelibConsumer {
     import spark.implicits._
     spark.sparkContext.setLogLevel("WARN")
 
+    println("[INFO] VelibConsumer démarré : en attente de données depuis Kafka...")
+
     // Lecture depuis Kafka
     val df = spark.readStream
       .format("kafka")
@@ -31,7 +33,6 @@ object VelibConsumer {
       .format("json")
       .option("path", "velib_output")
       .option("checkpointLocation", "velib_output_checkpoint")
-      .outputMode("append")
       .start()
 
     queryToFile.awaitTermination()

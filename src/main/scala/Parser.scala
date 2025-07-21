@@ -70,13 +70,14 @@ object Parser {
         .otherwise("egal"))
 
     // === 2. Enrichissement avec fichier JSON station_name_mapping.json ===
-    val jsonPath = "data/station_name_mapping.json"
-    val jsonDf = spark.read
+    val jsonPath = "C:\\Users\\Zeineb Rekik\\velib\\station_name_mapping.json"
+    val mappingRawDf = spark.read
       .option("multiline", "true")
       .json(jsonPath)
 
-    val mappingDf = jsonDf
-      .selectExpr("stack(1000, " + jsonDf.columns.map(col => s"'$col', `$col`").mkString(", ") + ") as (stationcode, name_custom)")
+    // Conversion du mapping en DataFrame clé/valeur
+    val mappingMap = mappingRawDf.head().getValuesMap[String](mappingRawDf.columns)
+    val mappingDf = mappingMap.toSeq.toDF("stationcode", "name_custom")
 
     val enrichedDf = parsedDf.join(mappingDf, Seq("stationcode"), "left")
 
@@ -90,12 +91,9 @@ object Parser {
       )
 
     // === 4. Fenêtre temporelle : évolution des vélos ===
-    val windowSpec = Window.partitionBy("stationcode").orderBy("timestamp")
-    val windowDf = enrichedDf
-      .withColumn("prev_bikes", lag("numbikesavailable", 1).over(windowSpec))
-      .withColumn("diff_bikes", col("numbikesavailable") - col("prev_bikes"))
+    // (Supprimé car non supporté en streaming)
 
     // === 5. Résultat final ===
-    windowDf
+    enrichedDf
   }
 }
