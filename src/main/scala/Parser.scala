@@ -90,8 +90,14 @@ object Parser {
         sum("ebike").as("sum_ebike")
       )
 
-    // === 4. Fenêtre temporelle : évolution des vélos ===
-    // (Supprimé car non supporté en streaming)
+    // === KPIs globaux ===
+    val nbStations = enrichedDf.count()
+    val nbStationsPleines = enrichedDf.filter(col("is_full")).count()
+    val nbStationsVides = enrichedDf.filter(col("numbikesavailable") === 0).count()
+    val tauxStationsPleines = if (nbStations > 0) nbStationsPleines.toDouble / nbStations else 0.0
+    val tauxStationsVides = if (nbStations > 0) nbStationsVides.toDouble / nbStations else 0.0
+    val nbActives = enrichedDf.filter((col("is_installed") === "OUI") && (col("is_renting") === "OUI")).count()
+    val nbInactives = nbStations - nbActives
 
     // === 5. Résultat final ===
     enrichedDf

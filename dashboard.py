@@ -179,7 +179,7 @@ st.pydeck_chart(pdk.Deck(
 ))
 
 # === KPIs ===
-k1, k2, k3, k4 = st.columns(4)
+k1, k2, k3, k4, k5, k6 = st.columns(6)
 with k1:
     st.markdown(f"<div class='kpi-block'><div class='kpi-title'>Vélos électriques</div><div class='kpi-value'>{int(df['ebike'].sum())}</div></div>", unsafe_allow_html=True)
 with k2:
@@ -188,19 +188,14 @@ with k3:
     st.markdown(f"<div class='kpi-block'><div class='kpi-title'>Bornes vides</div><div class='kpi-value'>{int(df['numdocksavailable'].sum())}</div></div>", unsafe_allow_html=True)
 with k4:
     st.markdown(f"<div class='kpi-block'><div class='kpi-title'>Vélos disponibles</div><div class='kpi-value'>{int(df['numbikesavailable'].sum())}</div></div>", unsafe_allow_html=True)
-
-# === DONUT TYPE DE VÉLO (basé sur type_dominant) ===
-st.markdown("<div class='section-header'>Répartition filtrée des types dominants</div>", unsafe_allow_html=True)
-arr_options = sorted(df["arrondissement"].unique())
-arr_selected = st.multiselect("Filtrer par arrondissement", arr_options, default=arr_options)
-df_filtered = df[df["arrondissement"].isin(arr_selected)]
-
-if "type_dominant" in df_filtered.columns:
-    donut_data = df_filtered["type_dominant"].value_counts().reset_index()
-    donut_data.columns = ["type", "total"]
-    fig = px.pie(donut_data, names='type', values='total', hole=0.4,
-                 color_discrete_map={"électrique": "#2ECC71", "mécanique": "#3498DB", "mixte": "#E67E22"})
-    st.plotly_chart(fig, use_container_width=True)
+with k5:
+    if 'is_full' in df.columns:
+        taux_pleines = 100 * (df['is_full'].sum() / len(df))
+        st.markdown(f"<div class='kpi-block'><div class='kpi-title'>Taux stations pleines</div><div class='kpi-value'>{taux_pleines:.1f}%</div></div>", unsafe_allow_html=True)
+with k6:
+    if 'numbikesavailable' in df.columns:
+        taux_vides = 100 * ((df['numbikesavailable'] == 0).sum() / len(df))
+        st.markdown(f"<div class='kpi-block'><div class='kpi-title'>Taux stations vides</div><div class='kpi-value'>{taux_vides:.1f}%</div></div>", unsafe_allow_html=True)
 
 # === STATIONS PLEINES ===
 st.markdown("<div class='section-header'>Stations pleines (aucune borne libre)</div>", unsafe_allow_html=True)

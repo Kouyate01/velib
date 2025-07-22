@@ -51,3 +51,4 @@ logs/
 kafka_*/logs/
 
 
+velib_output_checkpoint/
