@@ -99,7 +99,6 @@ object Parser {
     val nbActives = enrichedDf.filter((col("is_installed") === "OUI") && (col("is_renting") === "OUI")).count()
     val nbInactives = nbStations - nbActives
 
-    // === 5. Résultat final ===
     enrichedDf
   }
 }
